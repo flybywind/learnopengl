@@ -22,10 +22,10 @@ GLEW的功能就是根据不同的平台进行适配，所以必须在GLFW之前
 
 也就是说，在Mac上必须指定这2个设置：
 
-`
+```
 glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-`
+```
 
 还有，必须按照你显卡支持的OpenGL版本设置`GLFW_CONTEXT_VERSION_MAJOR`和`GLFW_CONTEXT_VERSION_MINOR`，比如我的版本是4.1，那么前者就应该设置为4，后者为1。
 
