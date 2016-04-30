@@ -7,3 +7,5 @@
 ## CMakeLists.txt
 
 为了方便构建项目，我使用cmake来创建xcode。这样就不需要每次都手动添加很多库了。写得比较简单，不过够我在Mac上用了。
+
+记得每次更改一下 `project(YourProjectName)` 中的YourProjectName
