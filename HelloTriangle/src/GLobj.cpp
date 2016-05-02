@@ -22,14 +22,16 @@ _vertex_attr_normalized(GL_FALSE),
 _vertex_attr_stride(0),
 _vertex_attr_offset((GLvoid*)0),
 _use_ebo(GL_FALSE),
-_draw_usage(GL_DYNAMIC_DRAW) {
+_draw_usage(GL_DYNAMIC_DRAW),
+_has_binded(GL_FALSE) {
     _vao = GLobj::_increase_id();
     _vbo = _vao;
-    glGenVertexArrays(1, &_vao);
-    glGenBuffers(1, &_vbo);
+    _vbo_ary_byte_len = sizeof(GLfloat);
+    glGenBuffers(1, &_vao);
 }
 
 GLobj::~GLobj() {
+    printf("dealloc GLobj");
     glDeleteVertexArrays(1, &_vao);
     glDeleteBuffers(1, &_vbo);
     if (_use_ebo) {
@@ -40,6 +42,7 @@ GLobj::~GLobj() {
 void GLobj::SetVBO(const void* a, GLuint len) {
     _vbo_ary = a;
     _vbo_ary_len = len;
+    glGenVertexArrays(1, &_vbo);
 }
 
 void GLobj::SetEBO(const GLuint* a, GLuint len) {
@@ -51,6 +54,9 @@ void GLobj::SetEBO(const GLuint* a, GLuint len) {
 }
 
 void GLobj::Bind() {
+    if (_has_binded) {
+        return;
+    }
     glBindVertexArray(_vao);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBufferData(GL_ARRAY_BUFFER,
@@ -73,10 +79,7 @@ void GLobj::Bind() {
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-}
-
-void GLobj::ReActive() {
-    glBindVertexArray(_vao);
+    _has_binded = GL_TRUE;
 }
 
 void GLobj::Draw(GLenum shape) {
@@ -94,11 +97,20 @@ void GLobj::Draw(GLenum shape, GLuint count) {
 }
 
 void GLobj::Draw(GLenum shape, GLuint start, GLuint count) {
+    if (!_has_binded) {
+        fprintf(stderr, "GLobj::Draw[fatal]: bind hasn't been executed!\n");
+        return;
+    }
+    glBindVertexArray(_vao);
+
     if (_use_ebo) {
         glDrawElements(shape, (GLsizei)count, GL_UNSIGNED_INT, (GLvoid*)(_ebo+start));
     } else {
         glDrawArrays(shape, start, count);
     }
+    
+    glBindVertexArray(0);
+
 }
 void GLobj::SetVertexAttribIndex(GLuint ind){
     _vertex_attr_index = ind;

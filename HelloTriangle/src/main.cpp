@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include "GLobj.hpp"
 #include <iostream>
 void glfwErrorCallback(int error, const char *description)
 {
@@ -147,32 +148,19 @@ int main(int argc, const char * argv[]) {
         0.8f, -0.5f, 0.0f,  // Bottom Right
         -0.2f, -0.5f, 0.0f, // bottom left
     };
-
-    GLuint VBO, VAO, VBO2, VAO2;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
     
-    glGenVertexArrays(2, &VAO2);
-    glGenBuffers(2, &VBO2);
+    GLobj obj1, obj2;
+    obj1.SetVBO(vertices, STATIC_ARRAY_SIZE(vertices));
+    obj2.SetVBO(vertices2, STATIC_ARRAY_SIZE(vertices2));
     
-    // Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
-    glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
+    obj1.SetVertexAttribSize(3);
+    obj2.SetVertexAttribSize(3);
+    obj1.SetDrawUsage(GL_STATIC_DRAW);
+    obj2.SetDrawUsage(GL_STATIC_DRAW);
+    obj1.Bind();
+    obj2.Bind();
     
-    glBindVertexArray(VAO2);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
-    glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
-    
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     while(!glfwWindowShouldClose(window))
     {
@@ -182,26 +170,13 @@ int main(int argc, const char * argv[]) {
         
         // Draw our first triangle
         glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glBindVertexArray(0);
+        obj1.Draw(GL_TRIANGLES);
         
         glUseProgram(shaderProgram2);
-        glBindVertexArray(VAO2);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glBindVertexArray(0);
+        obj2.Draw(GL_TRIANGLES);
         
         glfwSwapBuffers(window);
     }
-    
-    // Properly de-allocate all resources once they've outlived their purpose
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    
-    // Properly de-allocate all resources once they've outlived their purpose
-    glDeleteVertexArrays(1, &VAO2);
-    glDeleteBuffers(1, &VBO2);
-    
     glfwTerminate();
 
     return 0;

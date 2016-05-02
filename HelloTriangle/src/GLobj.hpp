@@ -13,6 +13,9 @@
 #include <GL/glew.h>
 #include <vector>
 
+#define STATIC_ARRAY_SIZE(ary) \
+    sizeof(ary)/sizeof(ary[0])
+
 class GLobj {
 public:
     GLobj();
@@ -22,7 +25,6 @@ public:
     void SetEBO(const GLuint*, GLuint);
     
     void Bind();
-    void ReActive();
     void Draw(GLenum shape);
     void Draw(GLenum shape, GLuint count);
     void Draw(GLenum, GLuint start, GLuint count);
@@ -59,6 +61,7 @@ private:
     
     GLboolean _use_ebo;
     GLenum _draw_usage;
+    GLboolean _has_binded;
 };
 
 #endif /* GLobj_hpp */
