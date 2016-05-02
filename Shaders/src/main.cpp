@@ -24,17 +24,20 @@ void glfwErrorCallback(int error, const char *description)
 // Shaders
 const GLchar* vertexShaderSource[] = {
     "layout (location = 0) in vec3 position;",
+    "layout (location = 1) in vec3 color;",
+    "out vec3 ourColor; // Output a color to the fragment shader",
     "void main()",
     "{",
-        "gl_Position = vec4(position.x, position.y, position.z, 1.0);",
+        "gl_Position = vec4(position.xyz, 1.0);",
+        "ourColor = color; // Set ourColor to the input color we got from the vertex data",
     "}"
 };
 const GLchar* fragmentShaderSource[] = {
+    "in vec3 ourColor;",
     "out vec4 color;",
-    "uniform vec4 ourColor;",
     "void main()",
     "{",
-        "color = ourColor;",
+        "color = vec4(ourColor, 1.0f);",
     "}"
 };
 
@@ -93,17 +96,28 @@ int main(int argc, const char * argv[]) {
     
     // Set up vertex data (and buffer(s)) and attribute pointers
     GLfloat vertices[] = {
-        0.0f,  0.5f, 0.0f,  // Top Right
-        0.5f, -0.5f, 0.0f,  // Bottom Right
-        -0.5f, -0.5f, 0.0f, // bottom left
+        // Positions            // Colors
+        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // Bottom Right
+        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,   // Bottom Left
+        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // Top
     };
     
     GLobj obj1;
     obj1.SetVBO(vertices, STATIC_ARRAY_SIZE(vertices));
-    obj1.SetVertexAttribSize(3);
-    obj1.SetDrawUsage(GL_STATIC_DRAW);
+    
     obj1.SetShader(&shader);
-    obj1.Bind();
+    
+    
+    obj1.StartBind();
+        obj1.SetVertexAttribSize(3);
+        obj1.SetVertexAttribStrid(6);
+        obj1.SetDrawUsage(GL_STATIC_DRAW);
+        obj1.EnableAttrib();
+        
+        obj1.SetVertexAttribIndex(1);
+        obj1.SetVertexAttribOffset(3);
+        obj1.EnableAttrib();
+    obj1.EndBind();
     
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -113,9 +127,9 @@ int main(int argc, const char * argv[]) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         
-        GLfloat timeValue = glfwGetTime();
-        GLfloat greenValue = (sin(timeValue) / 2) + 0.5;
-        shader.Uniform4f("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
+//        GLfloat timeValue = glfwGetTime();
+//        GLfloat greenValue = (sin(timeValue) / 2) + 0.5;
+//        shader.Uniform4f("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
         // Draw our first triangle
         obj1.Draw(GL_TRIANGLES);
         

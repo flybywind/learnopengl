@@ -24,7 +24,9 @@ public:
     void SetVBO(const void*, GLuint);
     void SetEBO(const GLuint*, GLuint);
     void SetShader(GLShader*);
-    void Bind();
+    void StartBind();
+    void EndBind();
+    
     void Draw(GLenum shape);
     void Draw(GLenum shape, GLuint count);
     void Draw(GLenum, GLuint start, GLuint count);
@@ -35,7 +37,8 @@ public:
     void SetVertexAttribType(GLenum);
     void SetVertexAttribNorm(GLboolean);
     void SetVertexAttribStrid(GLsizei);
-    void SetVertexAttribOffset(GLvoid*);
+    void SetVertexAttribOffset(GLuint);
+    void EnableAttrib();
     void SetDrawUsage(GLenum);
     
 

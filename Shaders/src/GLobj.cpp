@@ -59,7 +59,7 @@ void GLobj::SetEBO(const GLuint* a, GLuint len) {
 void GLobj::SetShader(GLShader* shader) {
     _shader = shader;
 }
-void GLobj::Bind() {
+void GLobj::StartBind() {
     glBindVertexArray(_vao);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBufferData(GL_ARRAY_BUFFER,
@@ -72,14 +72,18 @@ void GLobj::Bind() {
                      _ebo_ary, _draw_usage);
     }
     
+}
+void GLobj::EnableAttrib() {
     glVertexAttribPointer(_vertex_attr_index,
                           _vertex_attr_size,
                           _vertex_attr_type,
                           _vertex_attr_normalized,
                           _vertex_attr_stride,
                           _vertex_attr_offset);
-
+    
     glEnableVertexAttribArray(_vertex_attr_index);
+}
+void GLobj::EndBind() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     _has_binded = GL_TRUE;
@@ -164,10 +168,10 @@ void GLobj::SetVertexAttribNorm(GLboolean norm_flag) {
     _vertex_attr_normalized = norm_flag;
 }
 void GLobj::SetVertexAttribStrid(GLsizei strid) {
-    _vertex_attr_stride = strid;
+    _vertex_attr_stride = strid * _vbo_ary_byte_len;
 }
-void GLobj::SetVertexAttribOffset(GLvoid* p) {
-    _vertex_attr_offset = p;
+void GLobj::SetVertexAttribOffset(GLuint p) {
+    _vertex_attr_offset = (GLvoid*)(p * _vbo_ary_byte_len);
 }
 void GLobj::SetDrawUsage(GLenum draw_usage) {
     _draw_usage = draw_usage;
