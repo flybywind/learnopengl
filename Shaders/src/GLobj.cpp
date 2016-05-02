@@ -104,12 +104,13 @@ void GLobj::Draw(GLenum shape, GLuint start, GLuint count) {
         fprintf(stderr, "GLobj::Draw[fatal]: bind hasn't been executed!\n");
         return;
     }
-    if (_shader != NULL) {
+    if  (_shader != NULL) {
         _shader->UseProgram();
     } else {
         fprintf(stderr, "no shader attached!\n");
         return;
     }
+    
     glBindVertexArray(_vao);
 
     if (_use_ebo) {

@@ -1,12 +1,13 @@
 //
 //  main.cpp
-//  HelloWindow
+//  Shaders
 //
-//  Created by flybywind on 16/4/30.
+//  Created by flybywind on 16/5/2.
 //  Copyright © 2016年 flybywind. All rights reserved.
 //
 
 #include <stdio.h>
+#include <math.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "GLShader.hpp"
@@ -30,19 +31,13 @@ const GLchar* vertexShaderSource[] = {
 };
 const GLchar* fragmentShaderSource[] = {
     "out vec4 color;",
+    "uniform vec4 ourColor;",
     "void main()",
     "{",
-        "color = vec4(1.0f, 0.5f, 0.2f, 1.0f);",
+        "color = ourColor;",
     "}"
 };
 
-const GLchar* fragmentShaderSource2[] ={
-    "out vec4 color;",
-    "void main()",
-    "{",
-        "color = vec4(0.2f, 0.5f, 1.0f, 1.0f);",
-    "}"
-};
 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
@@ -87,51 +82,30 @@ int main(int argc, const char * argv[]) {
     // Build and compile our shader program
     // Vertex shader
     strncpy(GLShader::Version, "410", 3);
-    GLShader shader1(vertexShaderSource, STATIC_ARRAY_SIZE(vertexShaderSource),
-                     fragmentShaderSource, STATIC_ARRAY_SIZE(fragmentShaderSource)),
-             shader2(vertexShaderSource, STATIC_ARRAY_SIZE(vertexShaderSource),
-                     fragmentShaderSource2, STATIC_ARRAY_SIZE(fragmentShaderSource2));
-    
-    if (!shader1.Link()) {
+    GLShader shader(vertexShaderSource, STATIC_ARRAY_SIZE(vertexShaderSource),
+                    fragmentShaderSource, STATIC_ARRAY_SIZE(fragmentShaderSource));
+    if (!shader.Link()) {
         const GLchar* err;
-        shader1.Error(&err);
-        std::cerr << "shader1 failed: " << err << "\n";
-        return -1;
-    }
-    if (!shader2.Link()) {
-        const GLchar* err;
-        shader2.Error(&err);
-        std::cerr << "shader2 failed: " << err << "\n";
+        shader.Error(&err);
+        std::cerr << "shader failed: " << err << "\n";
         return -1;
     }
     
     // Set up vertex data (and buffer(s)) and attribute pointers
     GLfloat vertices[] = {
-        0.5f,  0.5f, 0.0f,  // Top Right
+        0.0f,  0.5f, 0.0f,  // Top Right
         0.5f, -0.5f, 0.0f,  // Bottom Right
         -0.5f, -0.5f, 0.0f, // bottom left
     };
     
-    GLfloat vertices2[] = {
-        0.8f,  0.5f, 0.0f,  // Top Right
-        0.8f, -0.5f, 0.0f,  // Bottom Right
-        -0.2f, -0.5f, 0.0f, // bottom left
-    };
-    
-    GLobj obj1, obj2;
+    GLobj obj1;
     obj1.SetVBO(vertices, STATIC_ARRAY_SIZE(vertices));
-    obj2.SetVBO(vertices2, STATIC_ARRAY_SIZE(vertices2));
-    
     obj1.SetVertexAttribSize(3);
-    obj2.SetVertexAttribSize(3);
     obj1.SetDrawUsage(GL_STATIC_DRAW);
-    obj2.SetDrawUsage(GL_STATIC_DRAW);
-    obj1.SetShader(&shader1);
-    obj2.SetShader(&shader2);
+    obj1.SetShader(&shader);
     obj1.Bind();
-    obj2.Bind();
     
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     while(!glfwWindowShouldClose(window))
     {
@@ -139,9 +113,11 @@ int main(int argc, const char * argv[]) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         
+        GLfloat timeValue = glfwGetTime();
+        GLfloat greenValue = (sin(timeValue) / 2) + 0.5;
+        shader.Uniform4f("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
         // Draw our first triangle
         obj1.Draw(GL_TRIANGLES);
-        obj2.Draw(GL_TRIANGLES);
         
         glfwSwapBuffers(window);
     }

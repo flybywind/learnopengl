@@ -22,9 +22,17 @@ public:
              const GLchar** fragment_shader, GLuint line2);
     ~GLShader();
     
+    GLuint GetProgram() { return _shader_prog; }
     GLboolean Error(const GLchar** err_msg);
     GLboolean Link();
     void UseProgram();
+    
+    void Uniform4f(const GLchar* var_name,
+                   GLfloat v0,
+                   GLfloat v1,
+                   GLfloat v2,
+                   GLfloat v3);
+
 private:
     GLchar* _make_source(const GLchar**, GLuint);
     

@@ -58,6 +58,15 @@ GLboolean GLShader::Link() {
 void GLShader::UseProgram() {
     glUseProgram(_shader_prog);
 }
+void GLShader::Uniform4f(const GLchar* var_name,
+                         GLfloat v0,
+                         GLfloat v1,
+                         GLfloat v2,
+                         GLfloat v3) {
+    GLint Location = glGetUniformLocation(_shader_prog, var_name);
+    UseProgram();
+    glUniform4f(Location, v0, v1, v2, v3);
+}
 GLboolean GLShader::Error(const GLchar** error) {
     if (!_success_code) {
         *error = _error_msg;
