@@ -9,6 +9,7 @@ include_directories(/usr/local/include)
 link_directories(${LIB_PATH})
 
 file(GLOB CPPSRC src/*.cpp)
+file(GLOB HEADERSRC src/*.hpp)
 # opengl可以直接通过find_package获得。
 find_package(OPENGL REQUIRED)
 # glfw和GLEW搜索lib_path获得。
@@ -22,7 +23,9 @@ find_library(GLFW_LIB
 message(STATUS "libraries: ${OPENGL_LIBRARIES} ${GLEW_LIB} ${GLFW_LIB}")
 message(STATUS "project name: ${PROJECT_NAME}")
 
+source_group("Headers" FILES ${HEADERSRC})
+source_group("Sources" FILES ${CPPSRC})
 # add_executable 必须在target_link_libraries之前运行，这样cmake才能找到target。
 # 否则，target_link_libraries就会说，${PROJECT_NAME}不是合法的target
-add_executable(${PROJECT_NAME} ${CPPSRC})
+add_executable(${PROJECT_NAME} ${CPPSRC} ${HEADERSRC})
 target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLEW_LIB} ${GLFW_LIB})
