@@ -21,32 +21,12 @@ void glfwErrorCallback(int error, const char *description)
                 description
             );
 }
-// Shaders
-const GLchar* vertexShaderSource[] = {
-    "layout (location = 0) in vec3 position;",
-    "layout (location = 1) in vec3 color;",
-    "out vec3 ourColor; // Output a color to the fragment shader",
-    "void main()",
-    "{",
-        "gl_Position = vec4(position.xyz, 1.0);",
-        "ourColor = color; // Set ourColor to the input color we got from the vertex data",
-    "}"
-};
-const GLchar* fragmentShaderSource[] = {
-    "in vec3 ourColor;",
-    "out vec4 color;",
-    "void main()",
-    "{",
-        "color = vec4(ourColor, 1.0f);",
-    "}"
-};
-
 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 
-int main(int argc, const char * argv[]) {
+int main() {
     const int WIDTH = 800;
     const int HEIGHT = 600;
     glfwInit();
@@ -85,8 +65,10 @@ int main(int argc, const char * argv[]) {
     // Build and compile our shader program
     // Vertex shader
     strncpy(GLShader::Version, "410", 3);
-    GLShader shader(vertexShaderSource, STATIC_ARRAY_SIZE(vertexShaderSource),
-                    fragmentShaderSource, STATIC_ARRAY_SIZE(fragmentShaderSource));
+//    GLShader shader(vertexShaderSource, STATIC_ARRAY_SIZE(vertexShaderSource),
+//                    fragmentShaderSource, STATIC_ARRAY_SIZE(fragmentShaderSource));
+    GLShader shader("../vertex_shader", "../fragment_shader");
+    
     if (!shader.Link()) {
         const GLchar* err;
         shader.Error(&err);
@@ -131,6 +113,11 @@ int main(int argc, const char * argv[]) {
 //        GLfloat greenValue = (sin(timeValue) / 2) + 0.5;
 //        shader.Uniform4f("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
         // Draw our first triangle
+        
+        GLfloat timeValue = glfwGetTime();
+        GLfloat offsetx = sin(timeValue) / 2;
+        shader.Uniform1f("offsetx", offsetx);
+
         obj1.Draw(GL_TRIANGLES);
         
         glfwSwapBuffers(window);

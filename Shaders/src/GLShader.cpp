@@ -13,32 +13,73 @@ GLShader::GLShader(const GLchar** vertex_shader, GLuint line,
 _success_code(0) {
     
     GLchar* _buffer;
-    _buffer =  _make_source(vertex_shader, line);
+    _buffer = _make_source(vertex_shader, line);
     printf("vertex source is: %s\n", _buffer);
 
     _vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(_vertex_shader, 1, &_buffer, NULL);
-    glCompileShader(_vertex_shader);
-    glGetShaderiv(_vertex_shader, GL_COMPILE_STATUS, &_success_code);
+    _compile(_buffer, _vertex_shader);
+    delete []_buffer;
     if (!_success_code) {
-        glGetShaderInfoLog(_vertex_shader, SHADER_ERROR_LENGTH, NULL, _error_msg);
         return;
     }
-    delete []_buffer;
 
     _buffer = _make_source(fragment_shader, line2);
     printf("fragment source is: %s\n", _buffer);
 
     _fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(_fragment_shader, 1, &_buffer, NULL);
-    glCompileShader(_fragment_shader);
-    glGetShaderiv(_fragment_shader, GL_COMPILE_STATUS, &_success_code);
-    if (!_success_code) {
-        glGetShaderInfoLog(_fragment_shader, SHADER_ERROR_LENGTH, NULL, _error_msg);
-    }
+    _compile(_buffer, _fragment_shader);
     delete []_buffer;
+    if (!_success_code) {
+        return;
+    }
 }
+GLShader::GLShader(const GLchar* vertexPath,
+                   const GLchar* fragmentPath) {
+        // 1. Retrieve the vertex/fragment source code from filePath
+        std::string vertexCode;
+        std::string fragmentCode;
+        std::ifstream vShaderFile;
+        std::ifstream fShaderFile;
+        // ensures ifstream objects can throw exceptions:
+        vShaderFile.exceptions(std::ifstream::badbit);
+        fShaderFile.exceptions(std::ifstream::badbit);
+        try
+        {
+            // Open files
+            vShaderFile.open(vertexPath);
+            fShaderFile.open(fragmentPath);
+            std::stringstream vShaderStream, fShaderStream;
+            // Read file's buffer contents into streams
+            vShaderStream << vShaderFile.rdbuf();
+            fShaderStream << fShaderFile.rdbuf();
+            // close file handlers
+            vShaderFile.close();
+            fShaderFile.close();
+            // Convert stream into GLchar array
+            vertexCode = vShaderStream.str();
+            fragmentCode = fShaderStream.str();
+        }
+        catch(std::ifstream::failure e)
+        {
+            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        }
+        const GLchar* _buffer = vertexCode.c_str();
+        printf("vertex source is: %s\n", _buffer);
+        _vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+        _compile(_buffer, _vertex_shader);
 
+        if (!_success_code) {
+            return;
+        }
+        
+        _buffer = fragmentCode.c_str();
+        printf("fragment source is: %s\n", _buffer);
+        _fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+        _compile(_buffer, _fragment_shader);
+        if (!_success_code) {
+            return;
+        }
+}
 GLboolean GLShader::Link() {
     if (!_success_code) {
         return GL_FALSE;
@@ -67,6 +108,11 @@ void GLShader::Uniform4f(const GLchar* var_name,
     UseProgram();
     glUniform4f(Location, v0, v1, v2, v3);
 }
+void GLShader::Uniform1f(const GLchar* var_name, GLfloat v) {
+    GLint Location = glGetUniformLocation(_shader_prog, var_name);
+    UseProgram();
+    glUniform1f(Location, v);
+}
 GLboolean GLShader::Error(const GLchar** error) {
     if (!_success_code) {
         *error = _error_msg;
@@ -78,6 +124,16 @@ GLboolean GLShader::Error(const GLchar** error) {
 GLShader::~GLShader() {
     glDeleteShader(_vertex_shader);
     glDeleteShader(_fragment_shader);
+}
+void GLShader::_compile(const GLchar* src, GLuint& shader) {
+    glShaderSource(shader, 1, &src, NULL);
+    glCompileShader(shader);
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &_success_code);
+    if (!_success_code) {
+        glGetShaderInfoLog(shader, SHADER_ERROR_LENGTH, NULL, _error_msg);
+        return ;
+    }
+    return;
 }
 GLchar* GLShader::_make_source(const GLchar** str, GLuint len) {
     GLchar* _buffer;
