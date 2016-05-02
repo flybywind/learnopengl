@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <GL/glew.h>
-#include <vector>
+#include "GLShader.hpp"
 
 #define STATIC_ARRAY_SIZE(ary) \
     sizeof(ary)/sizeof(ary[0])
@@ -23,7 +23,7 @@ public:
     
     void SetVBO(const void*, GLuint);
     void SetEBO(const GLuint*, GLuint);
-    
+    void SetShader(GLShader*);
     void Bind();
     void Draw(GLenum shape);
     void Draw(GLenum shape, GLuint count);
@@ -45,9 +45,6 @@ private:
     GLuint _vbo_ary_byte_len;
     const GLuint * _ebo_ary;
     GLuint _ebo_ary_len;
-    // 需要注意多线程加锁：
-    static GLuint _id;
-    static GLuint _increase_id();
     
     GLuint _vao;
     GLuint _vbo;
@@ -62,6 +59,8 @@ private:
     GLboolean _use_ebo;
     GLenum _draw_usage;
     GLboolean _has_binded;
+    
+    GLShader* _shader;
 };
 
 #endif /* GLobj_hpp */

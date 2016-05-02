@@ -8,13 +8,10 @@
 
 #include "GLobj.hpp"
 
-GLuint GLobj::_id = 0;
-GLuint GLobj::_increase_id() {
-    // 多线程不安全
-    return ++_id;
-}
 
 GLobj::GLobj():
+_vbo_ary_len(0),
+_ebo_ary_len(0),
 _vertex_attr_index(0),
 _vertex_attr_size(4),
 _vertex_attr_type(GL_FLOAT),
@@ -23,40 +20,46 @@ _vertex_attr_stride(0),
 _vertex_attr_offset((GLvoid*)0),
 _use_ebo(GL_FALSE),
 _draw_usage(GL_DYNAMIC_DRAW),
-_has_binded(GL_FALSE) {
-    _vao = GLobj::_increase_id();
-    _vbo = _vao;
+_has_binded(GL_FALSE),
+_shader(NULL) {
     _vbo_ary_byte_len = sizeof(GLfloat);
-    glGenBuffers(1, &_vao);
+    glGenVertexArrays(1, &_vao);
+    printf("gen VAO: %d\n", _vao);
 }
 
 GLobj::~GLobj() {
-    printf("dealloc GLobj");
     glDeleteVertexArrays(1, &_vao);
     glDeleteBuffers(1, &_vbo);
+    
+    printf("del VAO: %d\n", _vao);
+    printf("del VBO: %d\n", _vbo);
+    
     if (_use_ebo) {
         glDeleteBuffers(1, &_ebo);
+        printf("del EBO: %d\n", _ebo);
     }
 }
 
 void GLobj::SetVBO(const void* a, GLuint len) {
+    // TODO: 防止内存泄露，如果vbo已经绑定了数据，就应该重新初始化状态
     _vbo_ary = a;
     _vbo_ary_len = len;
-    glGenVertexArrays(1, &_vbo);
+    glGenBuffers(1, &_vbo);
+    printf("gen VBO: %d\n", _vbo);
+
 }
 
 void GLobj::SetEBO(const GLuint* a, GLuint len) {
     _ebo_ary = a;
     _ebo_ary_len = len;
     _use_ebo = GL_TRUE;
-    _ebo = _vbo;
     glGenBuffers(1, &_ebo);
+    printf("gen EBO: %d\n", _ebo);
 }
-
+void GLobj::SetShader(GLShader* shader) {
+    _shader = shader;
+}
 void GLobj::Bind() {
-    if (_has_binded) {
-        return;
-    }
     glBindVertexArray(_vao);
     glBindBuffer(GL_ARRAY_BUFFER, _vbo);
     glBufferData(GL_ARRAY_BUFFER,
@@ -76,7 +79,7 @@ void GLobj::Bind() {
                           _vertex_attr_stride,
                           _vertex_attr_offset);
 
-    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(_vertex_attr_index);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     _has_binded = GL_TRUE;
@@ -99,6 +102,12 @@ void GLobj::Draw(GLenum shape, GLuint count) {
 void GLobj::Draw(GLenum shape, GLuint start, GLuint count) {
     if (!_has_binded) {
         fprintf(stderr, "GLobj::Draw[fatal]: bind hasn't been executed!\n");
+        return;
+    }
+    if (_shader != NULL) {
+        _shader->UseProgram();
+    } else {
+        fprintf(stderr, "no shader attached!\n");
         return;
     }
     glBindVertexArray(_vao);
