@@ -10,6 +10,7 @@
 #include <math.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <SOIL/SOIL.h>
 #include "GLShader.hpp"
 #include "GLobj.hpp"
 
@@ -78,46 +79,65 @@ int main() {
     
     // Set up vertex data (and buffer(s)) and attribute pointers
     GLfloat vertices[] = {
-        // Positions            // Colors
-        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // Bottom Right
-        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,   // Bottom Left
-        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // Top
+        // Positions             // Colors              // Texture Coords
+        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Top Right
+        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom Right
+        -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
+        -0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left
+    };
+    GLuint indices[] = {  // Note that we start from 0!
+        0, 1, 3, // First Triangle
+        1, 2, 3  // Second Triangle
     };
     
     GLobj obj1;
     obj1.SetVBO(vertices, STATIC_ARRAY_SIZE(vertices));
-    
+    obj1.SetEBO(indices, STATIC_ARRAY_SIZE(indices));
     obj1.SetShader(&shader);
     
     
     obj1.StartBind();
         obj1.SetVertexAttribSize(3);
-        obj1.SetVertexAttribStrid(6);
+        obj1.SetVertexAttribStrid(8);
         obj1.SetDrawUsage(GL_STATIC_DRAW);
         obj1.EnableAttrib();
         
         obj1.SetVertexAttribIndex(1);
         obj1.SetVertexAttribOffset(3);
         obj1.EnableAttrib();
+    
+        obj1.SetVertexAttribIndex(2);
+        obj1.SetVertexAttribSize(2);
+        obj1.SetVertexAttribOffset(6);
+        obj1.EnableAttrib();
     obj1.EndBind();
     
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+    // texutre
+    int text_width, text_height;
+    unsigned char* image = SOIL_load_image("../container.jpg",
+                &text_width, &text_height, 0, SOIL_LOAD_RGB);
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    // Set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // Set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, text_width, text_height, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    SOIL_free_image_data(image);
+//    glBindTexture(GL_TEXTURE_2D, 0);
+    
     while(!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         
-//        GLfloat timeValue = glfwGetTime();
-//        GLfloat greenValue = (sin(timeValue) / 2) + 0.5;
-//        shader.Uniform4f("ourColor", 0.0f, greenValue, 0.0f, 1.0f);
-        // Draw our first triangle
-        
-        GLfloat timeValue = glfwGetTime();
-        GLfloat offsetx = sin(timeValue) / 2;
-        shader.Uniform1f("offsetx", offsetx);
-
+//        glBindTexture(GL_TEXTURE_2D, texture);
         obj1.Draw(GL_TRIANGLES);
         
         glfwSwapBuffers(window);
