@@ -9,7 +9,7 @@ include_directories(/usr/local/include)
 link_directories(${LIB_PATH})
 
 file(GLOB CPPSRC src/*.cpp)
-file(GLOB HEADERSRC src/*.hpp)
+file(GLOB HEADERSRC src/*.hpp src/*.h)
 # opengl可以直接通过find_package获得。
 find_package(OPENGL REQUIRED)
 # glfw和GLEW搜索lib_path获得。

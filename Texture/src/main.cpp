@@ -13,7 +13,7 @@
 #include <SOIL/SOIL.h>
 #include "GLShader.hpp"
 #include "GLobj.hpp"
-
+#include "GLTexture.hpp"
 #include <iostream>
 void glfwErrorCallback(int error, const char *description)
 {
@@ -113,31 +113,30 @@ int main() {
     obj1.EndBind();
     
     // texutre
-    int text_width, text_height;
-    unsigned char* image = SOIL_load_image("../container.jpg",
-                &text_width, &text_height, 0, SOIL_LOAD_RGB);
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    // Set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // Set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, text_width, text_height, 0,
-                 GL_RGB, GL_UNSIGNED_BYTE, image);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    SOIL_free_image_data(image);
-//    glBindTexture(GL_TEXTURE_2D, 0);
+    GLTexture texture("../container.jpg");
+    texture.SetParameteri(GL_TEXTURE_WRAP_S, GL_REPEAT);
+    texture.SetParameteri(GL_TEXTURE_WRAP_T, GL_REPEAT);
+    texture.SetParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    texture.SetParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    texture.GenMinMap();
     
     while(!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        // 这里修改vertices已经没用了。
+//        GLfloat timeValue = glfwGetTime();
+//        GLfloat v = (sin(timeValue)+1)/2;
+//        vertices[3] = v;
+//        vertices[12] = v;
+//        vertices[21] = v;
+//        obj1.SetVertexAttribIndex(1);
+//        obj1.SetVertexAttribOffset(3);
+//        obj1.EnableAttrib();
         
-//        glBindTexture(GL_TEXTURE_2D, texture);
+        // 在132行不要unbind，这里也不需要重新bind
+        //        glBindTexture(GL_TEXTURE_2D, texture);
         obj1.Draw(GL_TRIANGLES);
         
         glfwSwapBuffers(window);

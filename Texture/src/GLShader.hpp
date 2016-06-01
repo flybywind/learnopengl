@@ -30,6 +30,9 @@ public:
     ~GLShader();
     
     GLuint GetProgram() { return _shader_prog; }
+    GLint GetLoc(const char* name) {
+        return glGetUniformLocation(_shader_prog, name);
+    }
     GLboolean Error(const GLchar** err_msg);
     GLboolean Link();
     void UseProgram();
