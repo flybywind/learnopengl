@@ -38,8 +38,8 @@ GLTexture::~GLTexture() {
 }
 
 void GLTexture::SwitchUnit(GLint loc, GLuint uid) {
-    glActiveTexture(GL_TEXTURE0+uid);
     if (Active()) {
+        glActiveTexture(GL_TEXTURE0+uid);
         glUniform1i(loc, uid);
     }
 }

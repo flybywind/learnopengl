@@ -80,10 +80,10 @@ int main() {
     // Set up vertex data (and buffer(s)) and attribute pointers
     GLfloat vertices[] = {
         // Positions             // Colors              // Texture Coords
-        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Top Right
-        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom Right
-        -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
-        -0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left
+        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   2.0f, 1.0f - 2.0f, // Top Right
+        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   2.0f, 1.0f - 0.0f, // Bottom Right
+        -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f - 0.0f, // Bottom Left
+        -0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 0.0f,   0.0f, 1.0f - 2.0f  // Top Left
     };
     GLuint indices[] = {  // Note that we start from 0!
         0, 1, 3, // First Triangle
@@ -114,11 +114,20 @@ int main() {
     
     // texutre
     GLTexture texture("../container.jpg");
-    texture.SetParameteri(GL_TEXTURE_WRAP_S, GL_REPEAT);
-    texture.SetParameteri(GL_TEXTURE_WRAP_T, GL_REPEAT);
+    texture.SetParameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    texture.SetParameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     texture.SetParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     texture.SetParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     texture.GenMinMap();
+    texture.Unbind();
+    
+    GLTexture texture2("../awesomeface.png");
+    texture2.SetParameteri(GL_TEXTURE_WRAP_S, GL_REPEAT);
+    texture2.SetParameteri(GL_TEXTURE_WRAP_T, GL_REPEAT);
+    texture2.SetParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    texture2.SetParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    texture2.GenMinMap();
+    texture2.Unbind();
     
     while(!glfwWindowShouldClose(window))
     {
@@ -137,6 +146,20 @@ int main() {
         
         // 在132行不要unbind，这里也不需要重新bind
         //        glBindTexture(GL_TEXTURE_2D, texture);
+        
+        GLint loc = shader.GetLoc("ourTexture1");
+        if (loc >= 0) {
+            texture.SwitchUnit(loc, 0);
+        } else {
+            printf("can't find ourTexture1\n");
+        }
+        loc = shader.GetLoc("ourTexture2");
+        if (loc >= 0) {
+            texture2.SwitchUnit(loc, 1);
+        } else {
+            printf("can't find ourTexture2\n");
+        }
+        
         obj1.Draw(GL_TRIANGLES);
         
         glfwSwapBuffers(window);
